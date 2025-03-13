@@ -1,0 +1,128 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  ORGANIZATION
+  TEACHER
+  STUDENT
+}
+
+model User {
+  id             String           @id @default(uuid())
+  name           String
+  email          String           @unique
+  password       String
+  role           Role
+  organization   Organization?    @relation(fields: [organizationId], references: [id])
+  organizationId String? // Nullable because Admins don't belong to an organization
+  classrooms     ClassroomUser[]
+  subjects       TeacherSubject[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  Submission     Submission[]
+}
+
+model Organization {
+  id         String      @id @default(uuid())
+  name       String
+  users      User[]
+  classrooms Classroom[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+
+model Classroom {
+  id             String          @id @default(uuid())
+  name           String
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  organizationId String
+  users          ClassroomUser[]
+  subjects       Subject[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model ClassroomUser {
+  id          String    @id @default(uuid())
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String
+  classroom   Classroom @relation(fields: [classroomId], references: [id])
+  classroomId String
+  role        Role
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([userId, classroomId]) // Prevent duplicate enrollments
+}
+
+model Subject {
+  id          String           @id @default(uuid())
+  name        String
+  classroom   Classroom        @relation(fields: [classroomId], references: [id])
+  classroomId String
+  teachers    TeacherSubject[] // Many-to-Many relationship
+  modules     Module[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model TeacherSubject {
+  id        String   @id @default(uuid())
+  teacher   User     @relation(fields: [teacherId], references: [id])
+  teacherId String
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  subjectId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([teacherId, subjectId]) // Prevent duplicate assignments
+}
+
+model Module {
+  id          String       @id @default(uuid())
+  name        String
+  subject     Subject      @relation(fields: [subjectId], references: [id])
+  subjectId   String
+  assignments Assignment[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Assignment {
+  id          String       @id @default(uuid())
+  title       String
+  description String?
+  module      Module       @relation(fields: [moduleId], references: [id])
+  moduleId    String
+  submissions Submission[]
+  dueDate     DateTime
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Submission {
+  id           String     @id @default(uuid())
+  assignment   Assignment @relation(fields: [assignmentId], references: [id])
+  assignmentId String
+  student      User       @relation(fields: [studentId], references: [id])
+  studentId    String
+  content      String
+  submittedAt  DateTime   @default(now())
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([assignmentId, studentId]) // Prevent multiple submissions for the same assignment
+}

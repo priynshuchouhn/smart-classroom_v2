@@ -231,17 +231,17 @@ export default function Home() {
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {[
                   {
-                    name: 'Sarah Johnson',
+                    name: 'Sarah Jain',
                     role: 'High School Teacher',
                     content: 'Smart Classroom has transformed how I manage my virtual classroom. The interface is intuitive and my students love it!'
                   },
                   {
-                    name: 'Michael Chen',
+                    name: 'Manas Singh',
                     role: 'University Professor',
                     content: 'The ability to organize course materials and track student progress has made online teaching much more efficient.'
                   },
                   {
-                    name: 'Emily Davis',
+                    name: 'Leena Kevin',
                     role: 'Student',
                     content: 'I can easily access all my course materials and assignments in one place. The notification system keeps me on track.'
                   }
